@@ -1,0 +1,26 @@
+WITH cte1 AS (
+SELECT 
+	DISTINCT city_name AS City,
+	month_name AS Months,
+    Count(trip_id) as act_total_trip,
+    total_target_trips as target_trip
+FROM fact_trips u
+JOIN dim_city x
+ON u.city_id = x.city_id
+JOIN dim_date y
+ON u.date = y.date
+JOIN targets_db.monthly_target_trips z
+ON u.city_id = z.city_id and y.start_of_month = z.month
+GROUP BY city, months, target_trip)
+
+SELECT 
+	city,
+    months,
+    act_total_trip,
+    target_trip,
+    CASE
+		WHEN (act_total_trip-target_trip)>0 THEN "Above Target"
+        ELSE "Below Target" END AS Performance_status,
+        round(((act_total_trip-target_trip)/target_trip)*100,2) AS per_difference
+FROM cte1
+ORDER BY city, FIELD(months,"January","February","March","April","May","June")
