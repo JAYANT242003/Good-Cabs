@@ -1,0 +1,30 @@
+WITH cte1 AS(
+SELECT 
+	city_name AS City,
+    month_name AS Months,
+    sum(total_passengers) AS Total_Passengers,
+    sum(repeat_passengers) AS Repeated_Passengers,
+    ROUND((sum(repeat_passengers)/sum(total_passengers))*100,2) AS MRPR  
+FROM fact_passenger_summary z
+JOIN dim_city x
+ON z.city_id=x.city_id
+JOIN dim_date y
+ON z.month = y.date
+GROUP BY City, Months),
+cte2 AS (
+SELECT 
+	city_name AS City,
+    sum(total_passengers) AS Total_Passengers,
+    sum(repeat_passengers) AS Repeated_Passengers,
+    ROUND((sum(repeat_passengers)/sum(total_passengers))*100,2) AS CRPR  
+FROM fact_passenger_summary z
+JOIN dim_city x
+ON z.city_id=x.city_id
+JOIN dim_date y
+ON z.month = y.date
+GROUP BY City)
+
+select a.City,a.Months,a.Total_Passengers,a.Repeated_Passengers,a.MRPR,b.CRPR
+from cte2 b join cte1 a
+ON a.City = B.City 
+ORDER BY city, FIELD(months,"January","February","March","April","May","June")
