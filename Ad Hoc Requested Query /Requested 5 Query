@@ -1,0 +1,19 @@
+WITH cte1 AS(
+SELECT 
+	city_name AS City,
+    month_name AS Months,
+    SUM(fare_amount) AS Total_Revenue,
+    DENSE_RANK() OVER(PARTITION BY city_name  ORDER BY SUM(fare_amount) DESC) AS Ranks
+FROM fact_Trips
+JOIN dim_city
+USING (city_id)
+JOIN dim_date
+USING(date)
+GROUP BY City, Months)
+
+SELECT 
+	City,
+    Months,
+    Total_Revenue
+FROM cte1 
+WHERE Ranks = 1
