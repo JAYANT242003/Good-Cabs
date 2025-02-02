@@ -1,0 +1,30 @@
+WITH cte1 AS(
+SELECT 
+	city_name AS city,
+    count(
+    CASE
+		WHEN passenger_type = "new" THEN trip_id ELSE NULL END) AS Total_new_passenegers,
+        DENSE_RANK() OVER(ORDER BY count(
+    CASE
+		WHEN passenger_type = "new" THEN trip_id ELSE NULL END) DESC) AS Ranks
+FROM dim_city
+JOIN fact_trips
+USING(city_id)
+GROUP BY city),
+
+cte2 AS (
+SELECT
+	City,
+    Total_new_passenegers,
+    CASE
+		WHEN ranks IN (1,2,3) THEN "TOP 3"
+		WHEN ranks IN (8,9,10) THEN "BOTTOM 3" ELSE NULL
+        END AS city_category
+	FROM cte1)
+
+SELECT 
+	City,
+    Total_new_passenegers,
+    city_category
+FROM cte2 
+WHERE city_category IS NOT NULL
