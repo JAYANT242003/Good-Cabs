@@ -1,0 +1,24 @@
+WITH cte1 AS (
+SELECT 
+	city_name AS City,
+    count(trip_id) AS total_trips,
+    (sum(fare_amount)/sum(distance_travelled_km)) AS avg_fare_per_km,
+    (sum(fare_amount)/count(trip_id)) AS avg_fare_per_trip
+From fact_trips
+JOIN dim_city
+USING (City_id)
+GROUP BY City),
+
+cte2 AS (
+SELECT
+	count(trip_id) AS act_total_trips
+FROM fact_Trips)
+
+SELECT 
+	City,
+    total_trips,
+    avg_fare_per_km,
+    avg_fare_per_trip,
+    round((total_trips/act_total_trips)*100,2) AS per_contr_trips
+FROM cte1 CROSS JOIN cte2
+    
